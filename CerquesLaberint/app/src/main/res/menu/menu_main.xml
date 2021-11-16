@@ -1,0 +1,42 @@
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+tools:context="com.example.ramon.laberint.MainActivity" >
+
+<item
+    android:id="@+id/action_newgame"
+    android:orderInCategory="100"
+    android:title="@string/action_newgame"
+    app:showAsAction="ifRoom"/>
+<item
+    android:id="@+id/action_amplada"
+    android:orderInCategory="100"
+    android:title="@string/action_cercaampla"
+    app:showAsAction="ifRoom"/>
+<item
+    android:id="@+id/action_profunditat"
+    android:orderInCategory="100"
+    android:title="@string/action_cercaprofunditat"
+    app:showAsAction="ifRoom"
+    />
+<item
+    android:id="@+id/action_manhattan"
+    android:orderInCategory="100"
+    android:title="@string/action_cercamanhattan"
+    app:showAsAction="ifRoom"
+    />
+    <item
+        android:id="@+id/action_euclidea"
+        android:orderInCategory="100"
+        android:title="@string/action_cercaeuclidea"
+        app:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/action_viatjant"
+        android:orderInCategory="100"
+        android:title="@string/action_cercaviatjant"
+        app:showAsAction="ifRoom"
+        />
+</menu>
+
