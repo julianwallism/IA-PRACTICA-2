@@ -50,6 +50,7 @@ public class Cerca {
     }
 
     public Cami CercaEnAmplada(Punt origen, Punt desti) {
+        resetVisitats();
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
         // Implementa l'algoritme aquí
@@ -113,7 +114,7 @@ public class Cerca {
 
     private Punt generarSuccessor(Punt punt, int dir) {
         Punt successor = new Punt(punt.x + OFFSET_FIL[dir], punt.y + OFFSET_COL[dir]);
-        if (esPosicioCorrecta(successor) && laberint.pucAnar(successor.x, successor.y, DIRECCIONS[dir])) {
+        if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[dir])) {
             if (!visitat(successor)) {
                 successor.previ = punt;
                 return successor;
@@ -132,5 +133,9 @@ public class Cerca {
 
     private boolean visitat(Punt p) {
         return visitats[p.x][p.y];
+    }
+
+    private void resetVisitats(){
+        visitats = new boolean[files][columnes];
     }
 }
