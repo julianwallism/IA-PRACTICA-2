@@ -65,4 +65,8 @@ public class Punt implements Comparable<Punt> {
         }
     }
 
+    public String toString(){
+        return "Punt(" + x + ", " + y + ")";
+    }
+
 }
