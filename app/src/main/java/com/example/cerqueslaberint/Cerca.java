@@ -141,7 +141,7 @@ public class Cerca {
     }
 
     private boolean esPosicioCorrecta(Punt p) {
-        return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files;
+        return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files && !visitats[p.x][p.y];
     }
 
     private void generaCami(Punt inici, Punt fi, Cami cami){
