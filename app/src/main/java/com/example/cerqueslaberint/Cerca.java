@@ -1,7 +1,9 @@
 package com.example.cerqueslaberint;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * Created by Ramon Mas on 10/10/21.
@@ -37,9 +39,9 @@ public class Cerca {
     Laberint laberint;      // laberint on es cerca
     int files, columnes;    // files i columnes del laberint
 
-    static final int[] DIRECCIONS = {Laberint.DRETA, Laberint.AVALL, Laberint.ESQUERRA, Laberint.AMUNT};
-    static final int[] OFFSET_FIL = {-1, 0, 1, 0}; //
-    static final int[] OFFSET_COL = {0, 1, 0, -1};
+    static final int[] DIRECCIONS = {Laberint.AMUNT, Laberint.DRETA, Laberint.AVALL, Laberint.ESQUERRA};
+    static final int[] OFFSET_X = {-1, 0, 1, 0}; //
+    static final int[] OFFSET_Y = {0, 1, 0, -1};
     boolean[][] visitats;
 
     public Cerca(Laberint l) {
@@ -50,33 +52,27 @@ public class Cerca {
     }
 
     public Cami CercaEnAmplada(Punt origen, Punt desti) {
-        resetVisitats();
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
+
         // Implementa l'algoritme aquí
+        visitats = new boolean[files][columnes];
         Coa oberts = new Coa();
         oberts.afegeix(origen);
-        Punt p = null;
+        Punt punt = null;
         while (!oberts.buida()) {
-            Punt punt = (Punt) oberts.treu();
-            //System.out.println(punt + ", Pare: " + punt.previ);
+            punt = (Punt) oberts.treu();
             if (punt.equals(desti)) {
-                p = punt;
                 break;
             } else {
-                for (int i = 0; i < DIRECCIONS.length; i++) {
-                    Punt successor = generarSuccessor(punt, i);
-                    if (successor != null) {
-                        oberts.afegeix(successor);
-                    }
-                }
+                ArrayList<Punt> successors = generaSuccessors(punt);
                 visita(punt);
+                for (Punt successor : successors) {
+                    oberts.afegeix(successor);
+                }
             }
         }
-        while (!p.equals(origen)) {
-            camiTrobat.afegeix(p);
-            p = p.previ;
-        }
+        generaCami(punt, origen, camiTrobat);
         return camiTrobat;
     }
 
@@ -85,8 +81,23 @@ public class Cerca {
         laberint.setNodes(0);
 
         // Implementa l'algoritme aquí
-        camiTrobat.afegeix(desti);
-
+        visitats = new boolean[files][columnes];
+        ArrayDeque<Punt> oberts = new ArrayDeque<>();
+        oberts.push(origen);
+        Punt punt = null;
+        while (!oberts.isEmpty()) {
+            punt = (Punt) oberts.pop();
+            if (punt.equals(desti)) {
+                break;
+            } else {
+                ArrayList<Punt> successors = generaSuccessors(punt);
+                visita(punt);
+                for (Punt successor : successors) {
+                    oberts.push(successor);
+                }
+            }
+        }
+        generaCami(punt, origen, camiTrobat);
         return camiTrobat;
     }
 
@@ -112,15 +123,17 @@ public class Cerca {
         return camiTrobat;
     }
 
-    private Punt generarSuccessor(Punt punt, int dir) {
-        Punt successor = new Punt(punt.x + OFFSET_FIL[dir], punt.y + OFFSET_COL[dir]);
-        if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[dir])) {
-            if (!visitat(successor)) {
+    private ArrayList<Punt> generaSuccessors(Punt punt) {
+        ArrayList<Punt> successors = new ArrayList<>();
+        Punt successor;
+        for (int i = 0; i < DIRECCIONS.length; i++) {
+            successor = new Punt(punt.x + OFFSET_X[i], punt.y + OFFSET_Y[i]);
+            if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[i])) {
                 successor.previ = punt;
-                return successor;
+                successors.add(successor);
             }
         }
-        return null;
+        return successors;
     }
 
     private void visita(Punt p) {
@@ -128,14 +141,14 @@ public class Cerca {
     }
 
     private boolean esPosicioCorrecta(Punt p) {
-        return p.x >= 0 && p.x < files && p.y >= 0 && p.y < columnes;
+        return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files;
     }
 
-    private boolean visitat(Punt p) {
-        return visitats[p.x][p.y];
-    }
-
-    private void resetVisitats(){
-        visitats = new boolean[files][columnes];
+    private void generaCami(Punt inici, Punt fi, Cami cami){
+        while (inici != null && !inici.equals(fi)) {
+            cami.afegeix(inici);
+            inici = inici.previ;
+        }
+        cami.afegeix(fi);
     }
 }
