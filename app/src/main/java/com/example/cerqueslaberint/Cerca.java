@@ -2,6 +2,7 @@ package com.example.cerqueslaberint;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.List;
 import java.util.Stack;
 
@@ -107,9 +108,48 @@ public class Cerca {
         laberint.setNodes(0);
 
         // Implementa l'algoritme aquí
-        camiTrobat.afegeix(desti);
-
+        PriorityQueue<Punt> tancats = new PriorityQueue<>();
+        PriorityQueue<Punt> oberts = new PriorityQueue<>();
+        origen.distanciaDeLinici = 0;
+        oberts.add(origen);
+        Punt punt = null;
+        while(!oberts.isEmpty()){
+            punt = oberts.peek();
+            if(punt.equals(desti))
+                break;
+            oberts.remove(punt);
+            ArrayList<Punt> successors = generaSuccessors(punt);
+            for (Punt successor : successors) {
+                int pesTotal = punt.distanciaDeLinici + 1;
+                if (pesTotal < successor.distanciaDeLinici) {
+                    successor.distanciaDeLinici = pesTotal;
+                    successor.distanciaAlFinal = successor.distanciaDeLinici + heuristica(successor, desti, tipus);
+                    if (!oberts.contains(successor))
+                        oberts.add(successor);
+                }
+            }
+        }
+        generaCami(punt, origen, camiTrobat);
         return camiTrobat;
+    }
+
+    private double heuristica(Punt punt, Punt desti, int tipus){
+        if(tipus == EUCLIDEA)
+            return euclidea(punt, desti);
+        else
+            return manhattan(punt, desti);
+    }
+
+    private double euclidea(Punt punt, Punt desti){
+        float x = Math.abs(punt.x - desti.x);
+        float y = Math.abs(punt.y - desti.y);
+        return Math.sqrt(x*x + y*y);
+    }
+
+    private double manhattan(Punt punt, Punt desti){
+        float x = Math.abs(punt.x - desti.x);
+        float y = Math.abs(punt.y - desti.y);
+        return x + y;
     }
 
 
