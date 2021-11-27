@@ -1,5 +1,6 @@
 package com.example.cerqueslaberint;
 
+import java.sql.SQLOutput;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -43,6 +44,11 @@ public class Cerca {
     static final int[] DIRECCIONS = {Laberint.AMUNT, Laberint.DRETA, Laberint.AVALL, Laberint.ESQUERRA};
     static final int[] OFFSET_X = {-1, 0, 1, 0}; //
     static final int[] OFFSET_Y = {0, 1, 0, -1};
+    static final int[][] PERMUTACIONES ={{1,2,3,4}, {1,2,4,3}, {1,3,2,4}, {1,3,4,2}, {1,4,2,3}, {1,4,3,2}, {2,1,3,4},
+            {2,1,4,3}, {2,3,1,4}, {2,3,4,1}, {2,4,1,3}, {2,4,3,1}, {3,1,2,4}, {3,1,4,2},{3,2,1,4}, {3,2,4,1}, {3,4,1,2}, {3,4,2,1},
+            {4,1,2,3}, {4,1,3,2}, {4,2,1,3}, {4,2,3,1}, {4,3,1,2}, {4,3,2,1}};
+
+
     boolean[][] visitats;
 
     public Cerca(Laberint l) {
@@ -156,8 +162,46 @@ public class Cerca {
     public Cami CercaViatjant(Punt origen, Punt desti) {
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
-
+        int[][] dist = new int[6][6];
         // Implementa l'algoritme aquí
+
+        for (int i = 0; i < 4; i++) {
+            dist[0][i+1]=CercaAmbHeurística(origen,laberint.getObjecte(i),EUCLIDEA).longitud;
+        }
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = i+1; j < 4; j++) {
+                dist[i+1][j+1]=CercaAmbHeurística(laberint.getObjecte(i),laberint.getObjecte(j),EUCLIDEA).longitud;
+                dist[j+1][i+1]=CercaAmbHeurística(laberint.getObjecte(i),laberint.getObjecte(j),EUCLIDEA).longitud;
+            }
+        }
+
+        for(int i = 0; i<4; i++){
+            dist[i+1][5]=CercaAmbHeurística(laberint.getObjecte(i),desti,EUCLIDEA).longitud;
+        }
+        //ATENTOS AL CODIGO ESPAGUETI:
+        int[] permutacion =new int[4];
+        int coste=9999;
+        for (int[] perm: PERMUTACIONES) {
+            System.out.println(dist[0][perm[0]]);
+            int costeAux=dist[0][perm[0]];
+            for (int i = 0; i < 3; i++) {
+                costeAux+=dist[perm[i]][perm[i+1]];
+            }
+            costeAux+=dist[perm[3]][5];
+            if(costeAux<coste){
+                coste=costeAux;
+                permutacion=perm;
+            }
+        }
+        System.out.println("permutacion: "+java.util.Arrays.toString(permutacion)+" Coste: "+coste);
+
+        for (int[]row:dist){
+            System.out.println(java.util.Arrays.toString(row));
+        }
+        System.out.println();
+ 
+
         camiTrobat.afegeix(desti);
 
         return camiTrobat;
