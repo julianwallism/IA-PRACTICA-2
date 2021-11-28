@@ -209,14 +209,14 @@ public class Cerca {
         }
 //camiAux= CercaAmbHeurística(laberint.getObjecte(permutacion[3]),desti,EUCLIDEA);
         Cami  camiAux= CercaEnAmplada(laberint.getObjecte(permutacion[3]-1),desti);
-        for (int i =camiAux.longitud-1; i>0;i--) {
+        for (int i =0; i<camiAux.longitud-1;i++) {
             camiTrobat.afegeix(camiAux.cami[i]);
         }
 
         for (int i = 3; i > 0; i--) {
             // camiAux=CercaAmbHeurística(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i+1]-1),EUCLIDEA);
             camiAux=CercaEnAmplada(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i-1]-1));
-            for (int j =camiAux.longitud-1; j>0;j--) {
+            for (int j =camiAux.longitud-1; j>0; j--) {
                 camiTrobat.afegeix(camiAux.cami[j]);
             }
         }
@@ -224,9 +224,10 @@ public class Cerca {
         //Cami camiAux= CercaAmbHeurística(origen,laberint.getObjecte(permutacion[0]-1),EUCLIDEA);
        camiAux=CercaEnAmplada(origen,laberint.getObjecte(permutacion[0]-1));
 
-        for (int i = camiAux.longitud-1; i>0;i--) {
+        for (int i =0; i<camiAux.longitud-1;i++) {
             camiTrobat.afegeix(camiAux.cami[i]);
         }
+
 
 
         return camiTrobat;
