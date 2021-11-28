@@ -44,9 +44,11 @@ public class Cerca {
     static final int[] DIRECCIONS = {Laberint.AMUNT, Laberint.DRETA, Laberint.AVALL, Laberint.ESQUERRA};
     static final int[] OFFSET_X = {-1, 0, 1, 0}; //
     static final int[] OFFSET_Y = {0, 1, 0, -1};
-    static final int[][] PERMUTACIONES ={{1,2,3,4}, {1,2,4,3}, {1,3,2,4}, {1,3,4,2}, {1,4,2,3}, {1,4,3,2}, {2,1,3,4},
-            {2,1,4,3}, {2,3,1,4}, {2,3,4,1}, {2,4,1,3}, {2,4,3,1}, {3,1,2,4}, {3,1,4,2},{3,2,1,4}, {3,2,4,1}, {3,4,1,2}, {3,4,2,1},
-            {4,1,2,3}, {4,1,3,2}, {4,2,1,3}, {4,2,3,1}, {4,3,1,2}, {4,3,2,1}};
+    static final int[][] PERMUTACIONES ={{1,2,3,4}, {1,2,4,3}, {1,3,2,4}, {1,3,4,2}, {1,4,2,3},
+                                        {1,4,3,2}, {2,1,3,4}, {2,1,4,3}, {2,3,1,4}, {2,3,4,1},
+                                        {2,4,1,3}, {2,4,3,1}, {3,1,2,4}, {3,1,4,2}, {3,2,1,4},
+                                        {3,2,4,1}, {3,4,1,2}, {3,4,2,1}, {4,1,2,3}, {4,1,3,2},
+                                        {4,2,1,3}, {4,2,3,1}, {4,3,1,2}, {4,3,2,1}};
 
 
     boolean[][] visitats;
@@ -158,17 +160,18 @@ public class Cerca {
         return x + y;
     }
 
-
     public Cami CercaViatjant(Punt origen, Punt desti) {
-        Cami camiTrobat = new Cami(files * columnes);
+
         laberint.setNodes(0);
         int[][] dist = new int[6][6];
         // Implementa l'algoritme aquí
 
+        //Calculamos distancias entre punto inicial y los puntos a visitar
         for (int i = 0; i < 4; i++) {
             dist[0][i+1]=CercaAmbHeurística(origen,laberint.getObjecte(i),EUCLIDEA).longitud;
         }
 
+        //Calculamos distancias entre los 4 puntos a visitar
         for (int i = 0; i < 3; i++) {
             for (int j = i+1; j < 4; j++) {
                 dist[i+1][j+1]=CercaAmbHeurística(laberint.getObjecte(i),laberint.getObjecte(j),EUCLIDEA).longitud;
@@ -176,33 +179,55 @@ public class Cerca {
             }
         }
 
+        //Calculamos distancias de los 4 puntos a visitar al destino
         for(int i = 0; i<4; i++){
             dist[i+1][5]=CercaAmbHeurística(laberint.getObjecte(i),desti,EUCLIDEA).longitud;
         }
+
         //ATENTOS AL CODIGO ESPAGUETI:
         int[] permutacion =new int[4];
         int coste=9999;
         for (int[] perm: PERMUTACIONES) {
-            System.out.println(dist[0][perm[0]]);
+            //coste principio -> primer nodo
             int costeAux=dist[0][perm[0]];
+            //coste entre nodos
             for (int i = 0; i < 3; i++) {
                 costeAux+=dist[perm[i]][perm[i+1]];
             }
+            //Coste ultimo nodo -> destino
             costeAux+=dist[perm[3]][5];
             if(costeAux<coste){
                 coste=costeAux;
                 permutacion=perm;
             }
         }
+        Cami camiTrobat = new Cami(coste);
         System.out.println("permutacion: "+java.util.Arrays.toString(permutacion)+" Coste: "+coste);
 
         for (int[]row:dist){
             System.out.println(java.util.Arrays.toString(row));
         }
-        System.out.println();
- 
+//camiAux= CercaAmbHeurística(laberint.getObjecte(permutacion[3]),desti,EUCLIDEA);
+        Cami  camiAux= CercaEnAmplada(laberint.getObjecte(permutacion[3]-1),desti);
+        for (int i =camiAux.longitud-1; i>0;i--) {
+            camiTrobat.afegeix(camiAux.cami[i]);
+        }
 
-        camiTrobat.afegeix(desti);
+        for (int i = 3; i > 0; i--) {
+            // camiAux=CercaAmbHeurística(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i+1]-1),EUCLIDEA);
+            camiAux=CercaEnAmplada(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i-1]-1));
+            for (int j =camiAux.longitud-1; j>0;j--) {
+                camiTrobat.afegeix(camiAux.cami[j]);
+            }
+        }
+
+        //Cami camiAux= CercaAmbHeurística(origen,laberint.getObjecte(permutacion[0]-1),EUCLIDEA);
+       camiAux=CercaEnAmplada(origen,laberint.getObjecte(permutacion[0]-1));
+
+        for (int i = camiAux.longitud-1; i>0;i--) {
+            camiTrobat.afegeix(camiAux.cami[i]);
+        }
+
 
         return camiTrobat;
     }
