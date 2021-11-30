@@ -3,6 +3,8 @@ package com.example.cerqueslaberint;
 import java.sql.SQLOutput;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.List;
 import java.util.Stack;
@@ -44,11 +46,11 @@ public class Cerca {
     static final int[] DIRECCIONS = {Laberint.AMUNT, Laberint.DRETA, Laberint.AVALL, Laberint.ESQUERRA};
     static final int[] OFFSET_X = {-1, 0, 1, 0}; //
     static final int[] OFFSET_Y = {0, 1, 0, -1};
-    static final int[][] PERMUTACIONES ={{1,2,3,4}, {1,2,4,3}, {1,3,2,4}, {1,3,4,2}, {1,4,2,3},
-                                        {1,4,3,2}, {2,1,3,4}, {2,1,4,3}, {2,3,1,4}, {2,3,4,1},
-                                        {2,4,1,3}, {2,4,3,1}, {3,1,2,4}, {3,1,4,2}, {3,2,1,4},
-                                        {3,2,4,1}, {3,4,1,2}, {3,4,2,1}, {4,1,2,3}, {4,1,3,2},
-                                        {4,2,1,3}, {4,2,3,1}, {4,3,1,2}, {4,3,2,1}};
+    static final int[][] PERMUTACIONES = {{1, 2, 3, 4}, {1, 2, 4, 3}, {1, 3, 2, 4}, {1, 3, 4, 2}, {1, 4, 2, 3},
+            {1, 4, 3, 2}, {2, 1, 3, 4}, {2, 1, 4, 3}, {2, 3, 1, 4}, {2, 3, 4, 1},
+            {2, 4, 1, 3}, {2, 4, 3, 1}, {3, 1, 2, 4}, {3, 1, 4, 2}, {3, 2, 1, 4},
+            {3, 2, 4, 1}, {3, 4, 1, 2}, {3, 4, 2, 1}, {4, 1, 2, 3}, {4, 1, 3, 2},
+            {4, 2, 1, 3}, {4, 2, 3, 1}, {4, 3, 1, 2}, {4, 3, 2, 1}};
 
 
     boolean[][] visitats;
@@ -121,9 +123,9 @@ public class Cerca {
         origen.distanciaDeLinici = 0;
         oberts.add(origen);
         Punt punt = null;
-        while(!oberts.isEmpty()){
+        while (!oberts.isEmpty()) {
             punt = oberts.peek();
-            if(punt.equals(desti))
+            if (punt.equals(desti))
                 break;
             oberts.remove(punt);
             ArrayList<Punt> successors = generaSuccessors(punt);
@@ -141,96 +143,150 @@ public class Cerca {
         return camiTrobat;
     }
 
-    private double heuristica(Punt punt, Punt desti, int tipus){
-        if(tipus == EUCLIDEA)
+    private double heuristica(Punt punt, Punt desti, int tipus) {
+        if (tipus == EUCLIDEA)
             return euclidea(punt, desti);
         else
             return manhattan(punt, desti);
     }
 
-    private double euclidea(Punt punt, Punt desti){
+    private double euclidea(Punt punt, Punt desti) {
         float x = Math.abs(punt.x - desti.x);
         float y = Math.abs(punt.y - desti.y);
-        return Math.sqrt(x*x + y*y);
+        return Math.sqrt(x * x + y * y);
     }
 
-    private double manhattan(Punt punt, Punt desti){
+    private double manhattan(Punt punt, Punt desti) {
         float x = Math.abs(punt.x - desti.x);
         float y = Math.abs(punt.y - desti.y);
         return x + y;
     }
 
     public Cami CercaViatjant(Punt origen, Punt desti) {
-
-        laberint.setNodes(0);
-        int[][] dist = new int[6][6];
+/*        laberint.setNodes(0);
         // Implementa l'algoritme aquí
-
         //Calculamos distancias entre punto inicial y los puntos a visitar
+        int[][] dist = new int[6][6];
         for (int i = 0; i < 4; i++) {
-            dist[0][i+1]=CercaAmbHeurística(origen,laberint.getObjecte(i),EUCLIDEA).longitud;
+            dist[0][i + 1] = CercaAmbHeurística(origen, laberint.getObjecte(i), EUCLIDEA).longitud;
         }
-
         //Calculamos distancias entre los 4 puntos a visitar
         for (int i = 0; i < 3; i++) {
-            for (int j = i+1; j < 4; j++) {
-                dist[i+1][j+1]=CercaAmbHeurística(laberint.getObjecte(i),laberint.getObjecte(j),EUCLIDEA).longitud;
-                dist[j+1][i+1]=CercaAmbHeurística(laberint.getObjecte(i),laberint.getObjecte(j),EUCLIDEA).longitud;
+            for (int j = i + 1; j < 4; j++) {
+                dist[i + 1][j + 1] = CercaAmbHeurística(laberint.getObjecte(i), laberint.getObjecte(j), EUCLIDEA).longitud;
+                dist[j + 1][i + 1] = CercaAmbHeurística(laberint.getObjecte(i), laberint.getObjecte(j), EUCLIDEA).longitud;
             }
         }
-
         //Calculamos distancias de los 4 puntos a visitar al destino
-        for(int i = 0; i<4; i++){
-            dist[i+1][5]=CercaAmbHeurística(laberint.getObjecte(i),desti,EUCLIDEA).longitud;
+        for (int i = 0; i < 4; i++) {
+            dist[i + 1][5] = CercaAmbHeurística(laberint.getObjecte(i), desti, EUCLIDEA).longitud;
         }
-
         //ATENTOS AL CODIGO ESPAGUETI:
-        int[] permutacion =new int[4];
-        int coste=9999;
-        for (int[] perm: PERMUTACIONES) {
+        int[] permutacion = new int[4];
+        int coste = 9999;
+        for (int[] perm : PERMUTACIONES) {
             //coste principio -> primer nodo
-            int costeAux=dist[0][perm[0]];
+            int costeAux = dist[0][perm[0]];
             //coste entre nodos
             for (int i = 0; i < 3; i++) {
-                costeAux+=dist[perm[i]][perm[i+1]];
+                costeAux += dist[perm[i]][perm[i + 1]];
             }
             //Coste ultimo nodo -> destino
-            costeAux+=dist[perm[3]][5];
-            if(costeAux<coste){
-                coste=costeAux;
-                permutacion=perm;
+            costeAux += dist[perm[3]][5];
+            if (costeAux < coste) {
+                coste = costeAux;
+                permutacion = perm;
             }
         }
         Cami camiTrobat = new Cami(coste);
-        System.out.println("permutacion: "+java.util.Arrays.toString(permutacion)+" Coste: "+coste);
-
-        for (int[]row:dist){
+        System.out.println("permutacion: " + java.util.Arrays.toString(permutacion) + " Coste: " + coste);
+        for (int[] row : dist) {
             System.out.println(java.util.Arrays.toString(row));
         }
-//camiAux= CercaAmbHeurística(laberint.getObjecte(permutacion[3]),desti,EUCLIDEA);
-        Cami  camiAux= CercaEnAmplada(laberint.getObjecte(permutacion[3]-1),desti);
-        for (int i =0; i<camiAux.longitud-1;i++) {
+        //camiAux= CercaAmbHeurística(laberint.getObjecte(permutacion[3]),desti,EUCLIDEA);
+        Cami camiAux = CercaEnAmplada(laberint.getObjecte(permutacion[3] - 1), desti);
+        for (int i = 0; i < camiAux.longitud - 1; i++) {
             camiTrobat.afegeix(camiAux.cami[i]);
         }
-
         for (int i = 3; i > 0; i--) {
             // camiAux=CercaAmbHeurística(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i+1]-1),EUCLIDEA);
-            camiAux=CercaEnAmplada(laberint.getObjecte(permutacion[i]-1),laberint.getObjecte(permutacion[i-1]-1));
-            for (int j =camiAux.longitud-1; j>0; j--) {
+            camiAux = CercaEnAmplada(laberint.getObjecte(permutacion[i] - 1), laberint.getObjecte(permutacion[i - 1] - 1));
+            for (int j = camiAux.longitud - 1; j > 0; j--) {
                 camiTrobat.afegeix(camiAux.cami[j]);
             }
         }
 
         //Cami camiAux= CercaAmbHeurística(origen,laberint.getObjecte(permutacion[0]-1),EUCLIDEA);
-       camiAux=CercaEnAmplada(origen,laberint.getObjecte(permutacion[0]-1));
-
-        for (int i =0; i<camiAux.longitud-1;i++) {
+        camiAux = CercaEnAmplada(origen, laberint.getObjecte(permutacion[0] - 1));
+        for (int i = 0; i < camiAux.longitud - 1; i++) {
             camiTrobat.afegeix(camiAux.cami[i]);
         }
+        return camiTrobat;*/
+        return viatjant(origen, desti);
+    }
 
+    private Cami viatjant(Punt origen, Punt desti){
+        Integer[] nodes = {0, 1, 2, 3};
+        List<Integer[]> camins = permutacions(nodes);
+        Cami camiFinal = null;
+        camiFinal.longitud = Integer.MAX_VALUE;
+        for(Integer[] cami: camins){
+            Cami candidat = generaCami(cami, origen, desti);
+            if(candidat.longitud < camiFinal.longitud){
+                camiFinal = candidat;
+            }
+        }
+        return camiFinal;
+    }
 
+    private Cami generaCami(Integer[] cami, Punt origen, Punt desti){
+        Cami candidat = new Cami(files * columnes * cami.length);
+        Punt darrerNode = laberint.getObjecte(cami[cami.length - 1]);
+        Cami darrerNodeDesti = CercaEnAmplada(darrerNode, desti);
+        candidat = concatenaCami(darrerNodeDesti, candidat);
+        for (int i = cami.length - 1; i > 0; i--) {
+            Punt node = laberint.getObjecte(cami[i]);
+            Punt seguentNode = laberint.getObjecte(cami[i - 1]);
+            Cami parcial = CercaEnAmplada(seguentNode, node);
+            candidat = concatenaCami(parcial, candidat);
+        }
+        Punt primerNode = laberint.getObjecte(cami[0]);
+        Cami iniciPrimerNode = CercaEnAmplada(origen, primerNode);
+        candidat = concatenaCami(iniciPrimerNode, candidat);
+        return candidat;
+    }
 
-        return camiTrobat;
+    private Cami concatenaCami(Cami origen, Cami destinatari){
+        for(Punt p: origen.cami) {
+            if (p != null) {
+                destinatari.afegeix(p);
+            }
+        }
+        return destinatari;
+    }
+
+    private static <T> List<T[]> permutacions(T[] original){
+        List<T[]> permutacions = new ArrayList<>();
+        permutacionsHelper(original, permutacions, original.length);
+        return permutacions;
+    }
+
+    private static <T> void permutacionsHelper(T[] permutacio, List<T[]> permutacions, int n) {
+        if (n <= 1) {
+            permutacions.add(permutacio);
+        }
+        T[] permutacioTemp = Arrays.copyOf(permutacio, permutacio.length);
+        for (int i = 0; i < n; i++) {
+            intercanvia(permutacioTemp, i, n - 1);
+            permutacionsHelper(permutacioTemp, permutacions, n - 1);
+            intercanvia(permutacioTemp, i, n - 1); // backtracking
+        }
+    }
+
+    private static <T> void intercanvia(T[] array, int primer, int segon) {
+        T temp = array[primer];
+        array[primer] = array[segon];
+        array[segon] = temp;
     }
 
     private ArrayList<Punt> generaSuccessors(Punt punt) {
@@ -254,7 +310,7 @@ public class Cerca {
         return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files && !visitats[p.x][p.y];
     }
 
-    private void generaCami(Punt inici, Punt fi, Cami cami){
+    private void generaCami(Punt inici, Punt fi, Cami cami) {
         while (inici != null && !inici.equals(fi)) {
             cami.afegeix(inici);
             inici = inici.previ;
