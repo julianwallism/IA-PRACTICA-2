@@ -1,8 +1,10 @@
 package com.example.cerqueslaberint;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.List;
 
@@ -133,15 +135,53 @@ public class Cerca {
         int i;
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
+        visitats = new boolean[files][columnes];
 
         // Implementa l'algoritme aquí
+
+        ArrayList<Punt> oberts = new ArrayList<>();
+        ArrayList<Punt> tancats = new ArrayList<>();
+        Punt punt = new Punt();
+        origen.distanciaDeLinici = 0;
+        origen.distanciaAlFinal = heuristica(origen, desti, tipus);
+        oberts.add(origen);
+        while(!oberts.isEmpty()){
+            Collections.sort(oberts);
+            punt = oberts.get(0);
+            if(desti.equals(punt)){
+                break;
+            }
+            oberts.remove(punt);
+            tancats.add(punt);
+            ArrayList<Punt> successors = generaSuccessors(punt);
+            for(Punt successor: successors){
+                if(tancats.contains(successor)){
+                    continue;
+                }
+                int cost = successor.distanciaDeLinici + 1;
+                if(oberts.contains(successor) && cost<successor.distanciaDeLinici){
+                    oberts.remove(successor);
+                }
+                if(tancats.contains(successor) && cost<successor.distanciaDeLinici){
+                    tancats.remove(successor);
+                }
+                if(!oberts.contains(successor) && !tancats.contains(successor)){
+                    oberts.add(successor);
+                    successor.distanciaDeLinici = cost;
+                    successor.distanciaAlFinal = heuristica(successor, desti, tipus);
+                }
+            }
+        }
+
+/*
         PriorityQueue<Punt> tancats = new PriorityQueue<>();
-        PriorityQueue<Punt> oberts = new PriorityQueue<>();
+        ArrayList<Punt> oberts = new ArrayList<>();
         origen.distanciaDeLinici = 0;
         oberts.add(origen);
         Punt punt = null;
         while (!oberts.isEmpty()) {
-            punt = oberts.peek();
+            Collections.sort(oberts);
+            punt = oberts.get(0);
             if (punt.equals(desti))
                 break;
             oberts.remove(punt);
@@ -155,8 +195,9 @@ public class Cerca {
                         oberts.add(successor);
                 }
             }
-        }
+        }*/
         generaCami(punt, origen, camiTrobat);
+        System.out.println(Arrays.toString(camiTrobat.cami));
         return camiTrobat;
     }
 
@@ -172,7 +213,7 @@ public class Cerca {
         // Implementa l'algoritme aquí
         Integer[] nodes = {0, 1, 2, 3};
         List<Integer[]> camins = permutacions(nodes);
-        Cami camiFinal = null;
+        Cami camiFinal = new Cami(files*columnes);
         camiFinal.longitud = Integer.MAX_VALUE;
         for (Integer[] cami : camins) {
             Cami candidat = generaCami(cami, origen, desti);
