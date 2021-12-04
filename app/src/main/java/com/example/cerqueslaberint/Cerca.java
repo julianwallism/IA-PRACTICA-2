@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.PriorityQueue;
 import java.util.List;
 
 /**
@@ -22,14 +21,17 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit
- *    Mitjà
- *    Gran
+ *    Petit        0        12          0       10        0         12       0        10       0        42
+ *    Mitjà        0        108         0       22        0         22       0        22       0        62
+ *    Gran         0        63          0       31        0         41       0        31       0        115
  *
  * Comentari sobre els resultats obtinguts:
- * En general ens ha semblat que la cerca en profunditat rendeix pitjor que la cerca en amplada
- * en la majoria dels casos.
+ * Per a les diferents llargaries hem utilitzat les seguents mesures respectivament 7, 14, 21.
+ * Per a cada algoritme s'ha utilitzat el mateix laberint començant desde la esquina superior esquerra.
  *
+ * En general ens ha semblat que la cerca en profunditat rendeix pitjor que la cerca en amplada
+ * en la majoria dels casos. També ens pareix interessant que l'algoritme d'amplada i el de heuristica
+ * amb Euclidea sempre tenen el mateix resultat, i amb Manhattan es parescut pero algunes vegades es més llarg.
  *
  *
  *
@@ -83,7 +85,8 @@ public class Cerca {
                 ArrayList<Punt> successors = generaSuccessors(punt);
                 visitats[punt.x][punt.y] = true;
                 for (Punt successor : successors) {
-                    oberts.afegeix(successor);
+                    if(!visitats[successor.x][successor.y])
+                        oberts.afegeix(successor);
                 }
             }
         }
@@ -115,7 +118,8 @@ public class Cerca {
                 ArrayList<Punt> successors = generaSuccessors(punt);
                 visitats[punt.x][punt.y] = true;
                 for (Punt successor : successors) {
-                    oberts.push(successor);
+                    if(!visitats[successor.x][successor.y])
+                        oberts.push(successor);
                 }
             }
         }
@@ -135,8 +139,6 @@ public class Cerca {
         int i;
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
-        visitats = new boolean[files][columnes];
-
         // Implementa l'algoritme aquí
 
         ArrayList<Punt> oberts = new ArrayList<>();
@@ -172,32 +174,7 @@ public class Cerca {
                 }
             }
         }
-
-/*
-        PriorityQueue<Punt> tancats = new PriorityQueue<>();
-        ArrayList<Punt> oberts = new ArrayList<>();
-        origen.distanciaDeLinici = 0;
-        oberts.add(origen);
-        Punt punt = null;
-        while (!oberts.isEmpty()) {
-            Collections.sort(oberts);
-            punt = oberts.get(0);
-            if (punt.equals(desti))
-                break;
-            oberts.remove(punt);
-            ArrayList<Punt> successors = generaSuccessors(punt);
-            for (Punt successor : successors) {
-                int pesTotal = punt.distanciaDeLinici + 1;
-                if (pesTotal < successor.distanciaDeLinici) {
-                    successor.distanciaDeLinici = pesTotal;
-                    successor.distanciaAlFinal = successor.distanciaDeLinici + heuristica(successor, desti, tipus);
-                    if (!oberts.contains(successor))
-                        oberts.add(successor);
-                }
-            }
-        }*/
         generaCami(punt, origen, camiTrobat);
-        System.out.println(Arrays.toString(camiTrobat.cami));
         return camiTrobat;
     }
 
@@ -361,7 +338,7 @@ public class Cerca {
      * @return boolean que representa si el punt es dintre o no.
      */
     private boolean esPosicioCorrecta(Punt p) {
-        return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files && !visitats[p.x][p.y];
+        return p.x >= 0 && p.x < columnes && p.y >= 0 && p.y < files;
     }
 
     /**
