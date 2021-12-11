@@ -21,9 +21,10 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit        0        12          0       10        0         12       0        10       0        42
+ *    Petit        14        14          65       14        18         14       19        16       0        40
  *    Mitjà        0        108         0       22        0         22       0        22       0        62
- *    Gran         0        63          0       31        0         41       0        31       0        115
+ *    Gran         0        63          0       31        0         41
+ *       0        31       0        115
  *
  * Comentari sobre els resultats obtinguts:
  * Per a les diferents llargaries hem utilitzat les seguents mesures respectivament 7, 14, 21.
@@ -79,6 +80,7 @@ public class Cerca {
         Punt punt = null;
         while (!oberts.buida()) {
             punt = (Punt) oberts.treu();
+            laberint.nodes++;
             if (punt.equals(desti)) {
                 break;
             } else {
@@ -112,6 +114,7 @@ public class Cerca {
         Punt punt = null;
         while (!oberts.isEmpty()) {
             punt = (Punt) oberts.pop();
+            laberint.nodes++;
             if (punt.equals(desti)) {
                 break;
             } else {
@@ -150,6 +153,7 @@ public class Cerca {
         while(!oberts.isEmpty()){
             Collections.sort(oberts);
             punt = oberts.get(0);
+            laberint.nodes++;
             if(desti.equals(punt)){
                 break;
             }
@@ -185,8 +189,9 @@ public class Cerca {
      * @param desti  Punt final al que s'ha de arribar.
      * @return el cami solució generat.
      */
-    Cami CercaViatjant(Punt origen, Punt desti) {
+    public Cami CercaViatjant(Punt origen, Punt desti) {
         laberint.setNodes(0);
+        int nodesTotals=0;
         // Implementa l'algoritme aquí
         Integer[] nodes = {0, 1, 2, 3};
         List<Integer[]> camins = permutacions(nodes);
@@ -194,10 +199,12 @@ public class Cerca {
         camiFinal.longitud = Integer.MAX_VALUE;
         for (Integer[] cami : camins) {
             Cami candidat = generaCami(cami, origen, desti);
-            if (candidat.longitud < camiFinal.longitud) {
+            nodesTotals+=laberint.nodes;
+        if (candidat.longitud < camiFinal.longitud) {
                 camiFinal = candidat;
             }
         }
+        laberint.setNodes(nodesTotals);
         return camiFinal;
     }
 
