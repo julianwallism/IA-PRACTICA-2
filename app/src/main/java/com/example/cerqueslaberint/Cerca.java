@@ -21,20 +21,27 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit        14        14          65       14        18         14       19        16       0        40
- *    Mitjà        0        108         0       22        0         22       0        22       0        62
- *    Gran         0        63          0       31        0         41
- *       0        31       0        115
+ *    Petit        29       28        42        24       24        24       25       24      1284        48
+ *    Mitjà        106      36        177       26       51        40       42       26      5868        78
+ *    Gran         335      116       507       50       119       56       100      56      15084       160
+ *
  *
  * Comentari sobre els resultats obtinguts:
  * Per a les diferents llargaries hem utilitzat les seguents mesures respectivament 7, 14, 21.
- * Per a cada algoritme s'ha utilitzat el mateix laberint començant desde la esquina superior esquerra.
+ * Per a cada algoritme s'ha utilitzat el mateix laberint començant desde la esquina inferior dreta.
  *
- * En general ens ha semblat que la cerca en profunditat rendeix pitjor que la cerca en amplada
- * en la majoria dels casos. També ens pareix interessant que l'algoritme d'amplada i el de heuristica
- * amb Euclidea sempre tenen el mateix resultat, i amb Manhattan es parescut pero algunes vegades es més llarg.
+ * Podem veure com amb la cerca en profunditat obtenim un pitjor resultat que amb les altres cerques
+ * però sempre visitant menys nodes. Això concorda amb la teoria vista a classe.
  *
+ * També ens pareix interessant que l'algoritme d'amplada i el de heuristica amb Euclidea tinguin
+ * resultats similars.
  *
+ * Cal destacar el resultat obtingut amb la cerca Manhattan en el laberint mitjà que ha tengut el
+ * pitjor rendiment després de la cerca amb viatjants. Pensam que això es deu originar en l'estructura
+ * del laberint i en el punt on s'ha iniciat la cerca.
+ *
+ * La cerca amb viatjant té un gran nombre de nodes visitats degut a que per resoldre s'han de
+ * de calcular
  *
  *
  */
@@ -197,6 +204,7 @@ public class Cerca {
         List<Integer[]> camins = permutacions(nodes);
         Cami camiFinal = new Cami(files*columnes);
         camiFinal.longitud = Integer.MAX_VALUE;
+        System.out.println(camins.size());
         for (Integer[] cami : camins) {
             Cami candidat = generaCami(cami, origen, desti);
             nodesTotals+=laberint.nodes;
@@ -241,7 +249,7 @@ public class Cerca {
     private Cami generaCami(Integer[] cami, Punt origen, Punt desti) {
         Cami candidat = new Cami(files * columnes * cami.length);
         Punt darrerNode = laberint.getObjecte(cami[cami.length - 1]);
-        Cami darrerNodeDesti = CercaEnAmplada(darrerNode, desti);
+        Cami darrerNodeDesti = CercaAmbHeurística(darrerNode, desti, EUCLIDEA);
         candidat = concatenaCami(darrerNodeDesti, candidat);
         for (int i = cami.length - 1; i > 0; i--) {
             Punt node = laberint.getObjecte(cami[i]);
