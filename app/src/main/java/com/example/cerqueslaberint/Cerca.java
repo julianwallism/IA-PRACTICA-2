@@ -21,9 +21,9 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit        29       28        42        24       24        24       25       24      1284        48
- *    Mitjà        106      36        177       26       51        40       42       26      5868        78
- *    Gran         335      116       507       50       119       56       100      56      15084       160
+ *    Petit        29       28        42        24       24        24       25       24      642         48
+ *    Mitjà        106      36        177       26       51        40       42       26      2934        78
+ *    Gran         335      116       507       50       119       56       100      56      7542        160
  *
  *
  * Comentari sobre els resultats obtinguts:
