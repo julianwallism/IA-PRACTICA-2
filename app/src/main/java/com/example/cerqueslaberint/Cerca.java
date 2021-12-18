@@ -204,7 +204,6 @@ public class Cerca {
         List<Integer[]> camins = permutacions(nodes);
         Cami camiFinal = new Cami(files*columnes);
         camiFinal.longitud = Integer.MAX_VALUE;
-        System.out.println(camins.size());
         for (Integer[] cami : camins) {
             Cami candidat = generaCami(cami, origen, desti);
             nodesTotals+=laberint.nodes;
@@ -302,9 +301,8 @@ public class Cerca {
      * @param <T>          Generic per a que el metode funcioni per a tots els tipus de dades.
      */
     private static <T> void permutacionsRecursiu(T[] permutacio, List<T[]> permutacions, int n) {
-        if (n <= 1) {
+        if (n == 0)
             permutacions.add(permutacio);
-        }
         T[] permutacioTemp = Arrays.copyOf(permutacio, permutacio.length);
         for (int i = 0; i < n; i++) {
             intercanvia(permutacioTemp, i, n - 1);
