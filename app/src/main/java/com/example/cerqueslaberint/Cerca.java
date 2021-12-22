@@ -21,27 +21,31 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit        29       28        42        24       24        24       25       24      2268        48
- *    Mitjà        106      36        177       26       51        40       42       26      5052        78
- *    Gran         335      116       507       50       119       56       100      56      9702        160
+ *    Petit        62       38        89        20       76        19       88       19      6162        63
+ *    Mitjà        76       66        394       40       337       49       326      47      19926       142
+ *    Gran         637      209       884       55       265       46       365      46      43908       188
  *
  *
  * Comentari sobre els resultats obtinguts:
- * Per a les diferents llargaries hem utilitzat les seguents mesures respectivament 7, 14, 21.
- * Per a cada algoritme s'ha utilitzat el mateix laberint començant desde la esquina inferior dreta.
+ * Per a les diferents llargaries hem utilitzat les seguents mesures respectivament 10, 20, 30.
+ * Per a cada algorisme s'ha utilitzat el mateix laberint començant desde la el costat contrari de
+ * la sortida.
+ * S'ha emprat un valor de 30%
  *
  * Podem veure com amb la cerca en profunditat obtenim un pitjor resultat que amb les altres cerques
- * però sempre visitant menys nodes. Això concorda amb la teoria vista a classe.
+ * però visitant menys nodes. Això concorda amb la teoria vista a classe, ja que la cerca en profunditat
+ * comprova menys casos que la resta de cerques. Això fa que retorni un pitjor resultat més ràpidament.
  *
- * També ens pareix interessant que l'algoritme d'amplada i el de heuristica amb Euclidea tinguin
- * resultats similars.
+ * Sobre la cerca en amplada podem veure que el número de nodes visitats és proper al número màxim
+ * possible (n*n) ja que la sortida està a l'altre punta del laberint.
  *
- * Cal destacar el resultat obtingut amb la cerca Manhattan en el laberint mitjà que ha tengut el
- * pitjor rendiment després de la cerca amb viatjants. Pensam que això es deu originar en l'estructura
- * del laberint i en el punt on s'ha iniciat la cerca.
+ * Les cerques amb heurístiques han presentat els millors resultats entre tots. La de manhattan ha
+ * visitat 100 nodes menys que la Euclidiana, suposam que és per la disposició del laberint i la
+ * posició d'inici.
  *
  * La cerca amb viatjant té un gran nombre de nodes visitats degut a que per resoldre s'han de
- * de calcular
+ * de calcular (n+1)! cerques, sent n el nombre de punts a visitar.
+ *
  *
  *
  */
@@ -70,7 +74,7 @@ public class Cerca {
     }
 
     /**
-     * Mètode que resól la cerca del laberint mitjançant recorrgut en amplada.
+     * Mètode que resol la cerca del laberint mitjançant recorrgut en amplada.
      *
      * @param origen Punt inicial del qual es parteix.
      * @param desti  Punt final al que s'ha de arribar.
@@ -94,8 +98,11 @@ public class Cerca {
                 ArrayList<Punt> successors = generaSuccessors(punt);
                 visitats[punt.x][punt.y] = true;
                 for (Punt successor : successors) {
-                    if(!visitats[successor.x][successor.y])
+                    if(!visitats[successor.x][successor.y]) {
+                        successor.previ = punt;
                         oberts.afegeix(successor);
+                        visitats[successor.x][successor.y]=true;
+                    }
                 }
             }
         }
@@ -128,8 +135,11 @@ public class Cerca {
                 ArrayList<Punt> successors = generaSuccessors(punt);
                 visitats[punt.x][punt.y] = true;
                 for (Punt successor : successors) {
-                    if(!visitats[successor.x][successor.y])
+                    if(!visitats[successor.x][successor.y]){
+                        successor.previ=punt;
                         oberts.push(successor);
+                        visitats[successor.x][successor.y] = true;
+                    }
                 }
             }
         }
@@ -146,7 +156,6 @@ public class Cerca {
      * @return el cami solució generat.
      */
     public Cami CercaAmbHeurística(Punt origen, Punt desti, int tipus) {   // Tipus pot ser MANHATTAN o EUCLIDIA
-        int i;
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
         // Implementa l'algoritme aquí
@@ -159,33 +168,34 @@ public class Cerca {
         oberts.add(origen);
         while(!oberts.isEmpty()){
             Collections.sort(oberts);
-            punt = oberts.get(0);
+            punt = oberts.get(0); //M
             laberint.nodes++;
-            nodesViatjant++;
             if(desti.equals(punt)){
                 break;
             }
             oberts.remove(punt);
             tancats.add(punt);
             ArrayList<Punt> successors = generaSuccessors(punt);
-            for(Punt successor: successors){
+            for(Punt successor: successors){ //N
                 if(tancats.contains(successor)){
                     continue;
                 }
-                int cost = successor.distanciaDeLinici + 1;
-                if(oberts.contains(successor) && cost<successor.distanciaDeLinici){
+                int cost = punt.distanciaDeLinici + 1;
+                if(oberts.contains(successor) && cost<successor.distanciaDeLinici){////
                     oberts.remove(successor);
                 }
                 if(tancats.contains(successor) && cost<successor.distanciaDeLinici){
                     tancats.remove(successor);
                 }
                 if(!oberts.contains(successor) && !tancats.contains(successor)){
-                    oberts.add(successor);
                     successor.distanciaDeLinici = cost;
                     successor.distanciaAlFinal = heuristica(successor, desti, tipus);
+                    successor.previ=punt;
+                    oberts.add(successor);
                 }
             }
         }
+        nodesViatjant += laberint.nodes;
         generaCami(punt, origen, camiTrobat);
         return camiTrobat;
     }
@@ -200,8 +210,6 @@ public class Cerca {
     public Cami CercaViatjant(Punt origen, Punt desti) {
         laberint.setNodes(0);
         nodesViatjant=0;
-        int nodesTotals=0;
-        // Implementa l'algoritme aquí
         Integer[] nodes = {0, 1, 2, 3};
         List<Integer[]> camins = permutacions(nodes);
         Cami camiFinal = new Cami(files*columnes);
@@ -338,7 +346,7 @@ public class Cerca {
         for (int i = 0; i < DIRECCIONS.length; i++) {
             successor = new Punt(punt.x + OFFSET_X[i], punt.y + OFFSET_Y[i]);
             if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[i])) {
-                successor.previ = punt;
+                //successor.previ = punt;
                 successors.add(successor);
             }
         }
