@@ -21,9 +21,9 @@ import java.util.List;
  *                  Profunditat           Amplada          Manhattan         Euclidiana         Viatjant        *
  *  Laberint     Nodes   Llargada    Nodes   Llargada   Nodes   Llargada   Nodes   Llargada  Nodes   Llargada   *
  * **************************************************************************************************************
- *    Petit        62       38        89        20       76        19       88       19      6162        63
- *    Mitjà        76       66        394       40       337       49       326      47      19926       142
- *    Gran         637      209       884       55       265       46       365      46      43908       188
+ *    Petit        62       38        89        20       57        19       60       19      6042        62
+ *    Mitjà        76       66        394       40       225       49       279      47      19926       142
+ *    Gran         637      209       884       55       392       46       480      46      43908       188
  *
  *
  * Comentari sobre els resultats obtinguts:
@@ -89,10 +89,15 @@ public class Cerca {
         Coa oberts = new Coa();
         oberts.afegeix(origen);
         Punt punt = null;
+
         while (!oberts.buida()) {
+            /*
+            Extreïm un node de la coa d'oberts i hi afegim els seus successors
+            que no hagin estat visitats
+             */
             punt = (Punt) oberts.treu();
             laberint.nodes++;
-            if (punt.equals(desti)) {
+            if (punt.equals(desti)) { // Si el node és el destí sortim del bucle
                 break;
             } else {
                 ArrayList<Punt> successors = generaSuccessors(punt);
@@ -127,9 +132,13 @@ public class Cerca {
         oberts.push(origen);
         Punt punt = null;
         while (!oberts.isEmpty()) {
+            /*
+            Extreïm un node de la pila d'oberts i hi afegim els seus successors
+            que no hagin estat visitats
+             */
             punt = (Punt) oberts.pop();
             laberint.nodes++;
-            if (punt.equals(desti)) {
+            if (punt.equals(desti)) { // Si el node és el destí sortim del bucle
                 break;
             } else {
                 ArrayList<Punt> successors = generaSuccessors(punt);
@@ -156,47 +165,57 @@ public class Cerca {
      * @return el cami solució generat.
      */
     public Cami CercaAmbHeurística(Punt origen, Punt desti, int tipus) {   // Tipus pot ser MANHATTAN o EUCLIDIA
+        Punt[][] matriuPunts = inicialitzaMatriu(files, columnes);
         Cami camiTrobat = new Cami(files * columnes);
         laberint.setNodes(0);
         // Implementa l'algoritme aquí
 
         ArrayList<Punt> oberts = new ArrayList<>();
         ArrayList<Punt> tancats = new ArrayList<>();
-        Punt punt = new Punt();
+        Punt pare = new Punt();
         origen.distanciaDeLinici = 0;
         origen.distanciaAlFinal = heuristica(origen, desti, tipus);
         oberts.add(origen);
         while(!oberts.isEmpty()){
+            // Extreïm de la llista de oberts el node amb menor cost
             Collections.sort(oberts);
-            punt = oberts.get(0); //M
-            laberint.nodes++;
-            if(desti.equals(punt)){
+            pare = oberts.get(0); //M
+            if(desti.equals(pare)){
                 break;
             }
-            oberts.remove(punt);
-            tancats.add(punt);
-            ArrayList<Punt> successors = generaSuccessors(punt);
+            oberts.remove(pare);
+            tancats.add(pare);
+            // Generam els successors del node
+            ArrayList<Punt> successors = generaSuccessorsMatriu(matriuPunts, pare);
+            int cost = pare.distanciaDeLinici + 1; //g(n') = g(n) + 1
             for(Punt successor: successors){ //N
-                if(tancats.contains(successor)){
+                //Si el node successor ja està dins oberts i no hem trobat un millor camí passam al
+                //següent successor
+                if(oberts.contains(successor) && cost>=successor.distanciaDeLinici){
+                    continue;
+                }//Si el node successor ja està dins tancats i no hem trobat un millor camí passam al
+                //següent successor
+                if(tancats.contains(successor) && cost>=successor.distanciaDeLinici){
                     continue;
                 }
-                int cost = punt.distanciaDeLinici + 1;
-                if(oberts.contains(successor) && cost<successor.distanciaDeLinici){////
-                    oberts.remove(successor);
-                }
-                if(tancats.contains(successor) && cost<successor.distanciaDeLinici){
+                //Eliminam les occurrències del successor a la llista de tancats
+                if(tancats.contains(successor)){
                     tancats.remove(successor);
                 }
-                if(!oberts.contains(successor) && !tancats.contains(successor)){
-                    successor.distanciaDeLinici = cost;
-                    successor.distanciaAlFinal = heuristica(successor, desti, tipus);
-                    successor.previ=punt;
-                    oberts.add(successor);
+                //Eliminam les ocurrències del successor a la llista d'oberts
+                if(oberts.contains(successor)) {
+                    oberts.remove(successors);
                 }
+                //Inicialitzam les dades del successor i l'afegim a la coa d'oberts
+                successor.previ=pare;
+                successor.distanciaAlFinal= heuristica(successor, desti, tipus);
+                successor.distanciaDeLinici = cost;
+                laberint.nodes++;
+                oberts.add(successor);
             }
         }
         nodesViatjant += laberint.nodes;
-        generaCami(punt, origen, camiTrobat);
+        generaCami(pare, origen, camiTrobat);
         return camiTrobat;
     }
 
@@ -243,6 +262,22 @@ public class Cerca {
             y = Math.abs(punt.y - desti.y);
             return x + y;
         }
+    }
+    /**
+     * Mètode que inicialitza una matriu de punts.
+     *
+     * @param files  Punt inicial per calcular la distancia
+     * @param columnes Punt final per calcular la distancia
+     * @return la matriu de punts.
+     */
+    public Punt[][] inicialitzaMatriu(int files, int columnes){
+        Punt[][] matriu = new Punt[files][columnes];
+        for (int i = 0; i < files; i++) {
+            for (int j = 0; j < columnes; j++) {
+                matriu[i][j] = new Punt(i,j);
+            }
+        }
+        return matriu;
     }
 
     /**
@@ -348,6 +383,26 @@ public class Cerca {
             if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[i])) {
                 //successor.previ = punt;
                 successors.add(successor);
+            }
+        }
+        return successors;
+    }
+
+    /**
+     * Mètode que genera tots els punts que es poden visitar desde el punt dondat.
+     *
+     * @param matriu
+     * @param punt
+     * @return Llista dels punts als que es poden anar.
+     */
+    private ArrayList<Punt> generaSuccessorsMatriu(Punt[][] matriu, Punt punt) {
+        ArrayList<Punt> successors = new ArrayList<>();
+        Punt successor;
+        for (int i = 0; i < DIRECCIONS.length; i++) {
+            successor = new Punt(punt.x + OFFSET_X[i], punt.y + OFFSET_Y[i]);
+            if (esPosicioCorrecta(successor) && laberint.pucAnar(punt.x, punt.y, DIRECCIONS[i])) {
+                //successor.previ = punt;
+                successors.add(matriu[punt.x+OFFSET_X[i]][punt.y+OFFSET_Y[i]]);
             }
         }
         return successors;
